@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "outDir": "./lib/src/modules",
+    "target": "es2017",
+    "allowJs": false,
+    "checkJs": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "es5",
+      "es6",
+      "es2015"
+    ],
+    "types": [
+      "node",
+      "reflect-metadata",
+      "bunyan",
+      "inversify"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "lib"
+  ]
+}
