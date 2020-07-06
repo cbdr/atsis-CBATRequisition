@@ -71,18 +71,19 @@ export default class queryGenerator {
       }
       private async makeAPICall1(description: string, uri: string): Promise<any> {
         try {
-          console.log('token inside make api call is',this.token);
+          console.log('token inside make api call is 1',this.token);
          const apiToken: any = !isNullOrUndefined(this.token)? this.token :await this.getToken('generate token','','','');
-         console.log("api token is",apiToken)
+         console.log("api token is 1",typeof(apiToken))
           let auth= Buffer.from(`${this.process.getEnvVar('CBAT_AMAZON_USERNAME')}` + ':' + `${this.process.getEnvVar('CBAT_AMAZON_PASSWORD')}`, 'utf8').toString('base64')
           const options: any = {
             description,
             method: 'PUT',
             uri,
-            body:JSON.stringify({
+            body:{
               "status":"inactive"
-          }),
+          },
             headers: {
+              'Content-Type': 'application/json',
                 ["Ats-Auth-Token"]: apiToken.auth_code,
                 Authorization: 'Basic '+auth
             },
@@ -128,7 +129,7 @@ export default class queryGenerator {
           console.log('options in get token is',JSON.stringify(options));
           const response: any = await this.httpClient.call(options) ;
           //console.log(JSON.stringify(response));
-          this.token = response;
+          this.token = JSON.parse(response);
           return response;
         } catch (error) {
             console.log('error inside auth token api is',JSON.stringify(error));
