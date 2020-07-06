@@ -4,7 +4,7 @@ import AsyncPoolFactory from "../../core/async/AsyncPoolFactory";
 import { AsyncPool } from "../../core/async/AsyncPool";
 import Logger from "../../core/logging/Logger";
 import { isNullOrUndefined } from "util";
-import requistionExtendedDataHandler from "../../requisition/search/extendedRequisitionRequest";
+import requistionPostingDataHandler from "./requisitionPostingProcessor";
 import apiFactory from '../../requisition/search/requistionApiFactory'
 import errorHandler from '../../core/common/errors/ErrorParser'
 import xmlUtils from '../../core/utils/XMLUtils'
@@ -14,12 +14,13 @@ export default class requisitionRequestProcessor {
     public constructor(
         private poolFactory: AsyncPoolFactory,
         private apiFactory: apiFactory,
-        private extendedDataHandler: requistionExtendedDataHandler,
+        private postingDataHandler: requistionPostingDataHandler,
         private logger: Logger,
         private errorHandler : errorHandler,
         private xmlUtils: xmlUtils
     ) { }
-    public async extractEntities(entity: any,config: any,cb: any,searchParameters: any): Promise<void> {
+    public async extractEntities(entity: any,config: any,searchParameters: any,cb: any): Promise<void> {
+        console.log('inside extract entities');
         await this.extractEntitiesWithFilter(entity, config, searchParameters, cb);
     }
 
@@ -27,39 +28,89 @@ export default class requisitionRequestProcessor {
         
     }
     private async extractEntitiesWithFilter(entity: any,config: any,searchParameters: any,cb: any): Promise<void> {
-        let result: any = await this.extractPage(entity,'abc',config,searchParameters);
+        console.log('inside extract entities with filters');
+        searchParameters.page = 1;
+        
+        let result: any = await this.extractPage(entity,'abc',config,searchParameters,cb);
+       
         //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_INFO_RETRIEVED, { totalRegistersToProcess: results.searchResults.length, pageSize: searchParameters.limit });
-        result = this.xmlUtils.xml2Json(result);
-        console.log('xml to json is',JSON.stringify(result));
-        await cb(result.searchResults);
+        console.log("after extracting one page", JSON.stringify(result));
+        //await cb(result);
+        console.log('page number is ',parseInt(result.root.page._text), 'and total number page is ',parseInt(result.root.pageCount._text))
 
-        while (result.searchResults.length >= searchParameters.limit) {
+        while (parseInt(result.root.page._text) < parseInt(result.root.pageCount._text)) {
             try {
-                searchParameters.pageNumber++;
-                const totalRequistions: number = result.searchResults.length;
-                searchParameters.lastRetrievedEntityId = result.searchResults[totalRequistions - 1].id.toString();
-                result = await this.extractPage(entity,'null',config,searchParameters);
-                await cb(result.searchResults);
+                searchParameters.page++;
+                
+                console.log('inside while loop',searchParameters.page++);
+                result = await this.extractPage(entity,'null',config,searchParameters,cb);
+                
+                this.logger.info('xml to json is',result);
+                //await cb(result);
             } catch { }
         }
+        return ;
     }
 
-    private async extractPage(entity:any, pageUrl: string, config: any,searchParameters: any, retryLimit?: number): Promise<any> {
+    private async extractPage(entity:any, pageUrl: string, config: any,searchParameters: any,cb:any, retryLimit?: number): Promise<any> {
         //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_EXTRACTING_PAGE, { pageNumber: searchParameters.pageNumber });
+        console.log('inside extract page');
         const api: any = this.apiFactory.createFromAtsSyncExtract(config);
     
         try {
          
-            let candidates: any = null;
-            candidates = await api.getRequisitions(searchParameters) as any;
+            let requistionsData: any = null;
+            this.logger.info('getting requisitions in extract page',{});
+            requistionsData = await api.getRequisitions(searchParameters) as any;
+            console.log('1');
+            requistionsData = this.xmlUtils.customizedXmlFormat(requistionsData);
+            console.log('requistions data is',requistionsData);
+            console.log('requistion result is 123456',JSON.stringify(requistionsData));
             
-            return candidates as any;
+            if (parseInt(requistionsData.root.result.item.length)>0){
+                console.log('5');
+                await this.extractPostingDetails(requistionsData,api,cb,5);
+                console.log('after getting posting details in extract page',JSON.stringify(requistionsData))
+            }
+            return requistionsData as any;
           
             
         } catch (error) {
-          return await this.processError(error, entity, pageUrl, config, searchParameters, 5);
+            console.log("error is",error);
+            this.logger.info('error is',error);
+          //return await this.processError(error, entity, pageUrl, config, searchParameters, 5);
         }
       }
+
+    private async extractPostingDetails(requisitions:any, api: any,cb:any, retryLimit: number): Promise<void> {
+        try {
+            requisitions.root = requisitions.root ;
+          if (requisitions.root.result.item.length > 0) {
+    
+            const requisitionPool: AsyncPool = this.poolFactory.createPool(20);
+            let i =0;
+            console.log('length of requisitions ids array is',requisitions.root.result.item.length);
+            for (const requisition of requisitions.root.result.item) {
+                requisitionPool.startWorker({
+                fn: async (): Promise<any> => {
+                  requisition.postings = [];
+                  console.log('value of i is',++i)
+                  await this.postingDataHandler.extractRequistionPostingData(requisition as any, api,cb, retryLimit);
+                }
+              });
+            }
+            console.log("hiiii");
+            await requisitionPool.waitForAll();
+
+            console.log('byee');
+            console.log("requistion data after all async is",JSON.stringify(requisitions))
+            this.logger.info('all posting data along with requisition data',requisitions);
+          }
+        } catch (error) {
+            console.log(error);
+          }
+        }
+
     private async processError(
         error: any, entity:any, pageUrl: string, config: any,
         searchParameters: any, retryLimit: number): Promise<any> {

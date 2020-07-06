@@ -4,29 +4,50 @@ import { RequestLogger } from '../../core/http/RequestLogger';
 import Logger from '../../core/logging/Logger';
 import Process from '../../npm/Process';
 import buildQueryParams from './buildQueryParams'
+import { isNullOrUndefined, isNull } from 'util';
 @injectable()
 export default class queryGenerator {
+    private token :string = null;
     public constructor(
         private httpClient: RequestLogger,
         private logger: Logger,
-        private buildQueryParam:buildQueryParams
+        private buildQueryParam:buildQueryParams,
+        private process: Process
     ){
 
     }
 
     public async getRequisitions(searchParameters:any): Promise<any> {
+        console.log('search params in get requisitions are',searchParameters);
         const description: string = 'Gets the candidates from ICIMS';
-        const bodyParameters: any= this.buildQueryParam.buildQueryParameters(searchParameters);
+        const bodyParameters: any= this.buildQueryParam.buildRequisitionQueryParameters(searchParameters);
         const uri: string = ``;
         const response: any = await this.makeAPICall(description, bodyParameters) ;
-        console.log(JSON.stringify(response));
+        console.log('response for requistions request query is',JSON.stringify(response));
         return response;
       }
-
+      public async getPostingsId(searchParameters:any): Promise<any> {
+          console.log('search params in get posting id',searchParameters)
+        const description: string = 'Gets the candidates from ICIMS';
+        const bodyParameters: any= this.buildQueryParam.buildPostingQueryParameters(searchParameters);
+        const uri: string = ``;
+        const response: any = await this.makeAPICall(description, bodyParameters) ;
+        console.log('posting respose 1',JSON.stringify(response));
+        return response;
+      }
+      public async deactivateReqPostingById(searchParams:any): Promise<any>{
+        const description: string = 'Gets the candidates from ICIMS';
+        const bodyParameters: any= this.buildQueryParam.buildPostingDeactivationQueryParameter(searchParams);
+        const uri: string = ``;
+        const response: any = await this.makeAPICall1(description, bodyParameters) ;
+        console.log('posting respose 1',response);
+        return response;
+      }
       private async makeAPICall(description: string, uri: string): Promise<any> {
         try {
-          const apiToken: any = this.getToken('generate token','https://cbinternalbeta.luceosolutions.com/rest/user/auth','cbinternalbeta','MftF5hGNK');
-          let auth= Buffer.from(`cbinternalbeta` + ':' + `MftF5hGNK`, 'utf8').toString('base64')
+          console.log('token inside make api call is',this.token);
+         const apiToken: any = !isNullOrUndefined(this.token)? this.token :this.getToken('generate token','','','');
+          let auth= Buffer.from(`${this.process.getEnvVar('CBAT_AMAZON_USERNAME')}` + ':' + `${this.process.getEnvVar('CBAT_AMAZON_PASSWORD')}`, 'utf8').toString('base64')
           const options: any = {
             description,
             method: 'GET',
@@ -38,8 +59,36 @@ export default class queryGenerator {
             json: true,
             timeout: 10000
           };
+          //console.log('options for makeApiCall',options)
           const response: any = await this.httpClient.call(options) as any;
+          
           return response;
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            throw "error in getting search Query"
+          
+        }
+      }
+      private async makeAPICall1(description: string, uri: string): Promise<any> {
+        try {
+          console.log('token inside make api call is',this.token);
+         const apiToken: any = !isNullOrUndefined(this.token)? this.token :this.getToken('generate token','','','');
+          let auth= Buffer.from(`${this.process.getEnvVar('CBAT_AMAZON_USERNAME')}` + ':' + `${this.process.getEnvVar('CBAT_AMAZON_PASSWORD')}`, 'utf8').toString('base64')
+          const options: any = {
+            description,
+            method: 'GET',
+            uri,
+            headers: {
+                ["Ats-Auth-Token"]: apiToken.auth_code,
+                Authorization: 'Basic '+auth
+            },
+            json: true,
+            timeout: 10000
+          };
+          console.log('options for makeApiCall for deactivation is',options)
+          //const response: any = await this.httpClient.call(options) as any;
+          
+          return ;
         } catch (error) {
             console.log(JSON.stringify(error));
             throw "error in getting search Query"
@@ -59,40 +108,26 @@ export default class queryGenerator {
     //   }
       private async getToken(description:any,uri:any,username:any, password:any){
         try {
-            let auth= Buffer.from(`cbinternalbeta` + ':' + `MftF5hGNK`, 'utf8').toString('base64');
+            console.log('inside get token');
+            let auth= Buffer.from(`${this.process.getEnvVar('CBAT_AMAZON_USERNAME')}` + ':' + `${this.process.getEnvVar('CBAT_AMAZON_PASSWORD')}`, 'utf8').toString('base64');
             console.log('auth is',auth);
-        // const options: any = {
-        //     description,
-        //     method: 'Post',
-        //     uri,
-        //     headers: {
-        //         ['content-Type']: 'application/json',
-        //       Authorization: 'Basic '+auth
-        //     },
-        //     json: true,
-        //     timeout: 10000,
-        //     body:JSON.stringify({
-        //         "id": 1,
-        //         "password": ",kj[Y3b,D2D*Eyi77P"
-        //     })
-        //   };
         var options = {
             'method': 'POST',
-            'url': 'https://cbinternalbeta.luceosolutions.com/rest/user/auth',
+            'url': `${this.process.getEnvVar('CBAT_AMAZON_AUTH_TOKEN_API')}`,
             'headers': {
               'Content-Type': 'application/json',
-              'Authorization': 'Basic Y2JpbnRlcm5hbGJldGE6TWZ0RjVoR05L',
-              'Cookie': 'PHPSESSID=875a876266e186c6dc1a787c4309c565'
+              'Authorization': 'basic '+auth,
             },
             body: JSON.stringify({"id":1,"password":",kj[Y3b,D2D*Eyi77P"})
           
           }
-          console.log('options are',JSON.stringify(options));
+          console.log('options in get token is',JSON.stringify(options));
           const response: any = await this.httpClient.call(options) ;
-          console.log(JSON.stringify(response));
+          //console.log(JSON.stringify(response));
+          this.token = response;
           return response;
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log('error inside auth token api is',JSON.stringify(error));
         }
         
 

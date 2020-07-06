@@ -39,6 +39,7 @@ export default class Logger {
   }
 
   public info(msg: string, localContext: object): void {
+    //console.log('inside logger and messahe is',msg, 'and local context is', localContext);
     this.logAction('info', localContext, msg);
   }
 
@@ -79,12 +80,14 @@ export default class Logger {
   private logAction(functionName: LogType, logContext: object, msg: string): void {
     const localContext: any = {};
     _.merge(localContext, logContext);
+    //console.log('local context is', localContext);
     this.addLocalContext(localContext);
-    //this.bunyanLogger[functionName](localContext, msg);
+    this.bunyanLogger[functionName](localContext, msg);
   }
 
   private addLocalContext(argumentsCopy: object): void {
     _.merge(argumentsCopy, this.context);
+    //console.log('argument copy is',argumentsCopy, this.context)
   }
 
   private addPersistentLogger(config: IConfiguration): void {

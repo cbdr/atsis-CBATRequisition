@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/aws-lambda": "^8.10.57",
     "@types/aws-sdk": "^2.7.0",
     "@types/bunyan": "^1.8.6",
     "@types/jsonwebtoken": "^8.5.0",

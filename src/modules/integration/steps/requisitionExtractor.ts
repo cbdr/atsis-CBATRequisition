@@ -4,6 +4,7 @@ import Logger from '../../core/logging/Logger';
 import AsyncPoolFactory from '../../core/async/AsyncPoolFactory';
 import { AsyncPool } from '../../core/async/AsyncPool';
 import pageProcessor from './requisitionPageProcessor'
+import reqPostingDeactivator from './requisitionPostingDeactivator'
 interface IExtractResult {
   success: number;
   error: number;
@@ -13,14 +14,16 @@ interface IExtractResult {
 export default class requisitionExtractor {
   public constructor(private pageProcessor: pageProcessor,
                     private poolFactory: AsyncPoolFactory,
-                    private logger: Logger) {
+                    private logger: Logger,
+                    private reqPostingDeactivator:reqPostingDeactivator
+                    ) {
   }
 
   public async extract(config: any, cb: any): Promise<void> {
     let success: number = 0;
     let error: number = 0;
-    await this.pageProcessor.extractEntities('Candidate', config, 'searchParam', async (candidateList: any): Promise<void> => {
-      const result: IExtractResult = await this.processCandidateResults(candidateList, cb);
+    await this.pageProcessor.extractEntities('deActivate', config, {}, async (reqPostingId: any,api:any): Promise<void> => {
+      const result: IExtractResult = await this.DeactivateRequisitionsPostings(reqPostingId,api);
       success += result.success;
       error += result.error;
     });
@@ -28,27 +31,11 @@ export default class requisitionExtractor {
     //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_RESULT, { success, error });
   }
 
-  private async processCandidateResults(apiCandidates: any, cb: any): Promise<any> {
+  private async DeactivateRequisitionsPostings(reqPostingId: any,api:any): Promise<any> {
     let success: number = 0;
     let error: number = 0;
-    //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_PROCESSING_RESULTS_STARTED, { candidatesToProcess: apiCandidates.length });
-    if (apiCandidates.length > 0) {
-      const candidatePool: AsyncPool = this.poolFactory.createPool(20);
-      for (const apiCandidate of apiCandidates) {
-        candidatePool.startWorker({
-          fn: async (): Promise<any> => {
-            if (await this.processCandidate(apiCandidate, cb)) {
-              success++;
-            } else {
-              error++;
-            }
-          }
-        });
-      }
-      await candidatePool.waitForAll();
-    }
-
-    //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_PROCESSING_RESULTS_FINISHED, { success, error });
+    console.log('inside decativateRequistionPostings')
+    await this.reqPostingDeactivator.deactivateReqPosting(reqPostingId,api);
     return { success, error };
   }
 

@@ -13,7 +13,7 @@ export default class XMLUtils {
 
   public parseXML(xmlResponse: any): any {
     if (this.objUtils.isNull(xmlResponse)) {
-        return null;
+      return null;
     }
     const parsedXml: any = xmlReader.parseSync(xmlResponse);
     return parsedXml;
@@ -21,17 +21,17 @@ export default class XMLUtils {
 
   public xmlQuery(parseXML: any): any {
     if (this.objUtils.isNull(parseXML)) {
-        return null;
-    } 
+      return null;
+    }
     const resultsTag: any = xmlQuery(parseXML).find('string').text().replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     return resultsTag;
   }
 
   public xml2Json(xml: string, ignoreAttributes: boolean = false): any {
     if (this.objUtils.isNull(xml) || this.objUtils.isEmptyString(xml)) {
-        return null;
+      return null;
     }
-    const jsonResponse: string = xml2js.xml2json(xml, {compact: true, spaces: 4, ignoreAttributes });
+    const jsonResponse: string = xml2js.xml2json(xml, { compact: true, spaces: 4, ignoreAttributes });
     return jsonResponse;
   }
 
@@ -41,6 +41,34 @@ export default class XMLUtils {
       return null;
     }
 
-    return _.get(JSON.parse(json), `${ valueToFind }._text`);
+    return _.get(JSON.parse(json), `${valueToFind}._text`);
+  }
+
+  public customizedXmlFormat(xmlFile:any) {
+    var result;
+    try {
+      result = JSON.parse(xml2js.xml2json(xmlFile, { compact: true }));
+    } catch (e) {
+      return "error in converting";
+    }
+
+    //let result_p = _.get(result, 'root.result', {});
+    if (_.get(result, 'root.result', false)) {
+      result.root.result = this.parseResult(_.get(result, 'root.result', {}));
+    }
+    console.log('inside customized Xml format',JSON.stringify(result));
+    return result;
+  }
+
+  public parseResult(parse_res:any):any {
+    if (Array.isArray(parse_res)) {
+      parse_res = parse_res[0];
+    }
+    if (parse_res && parse_res.item && parse_res.item.constructor.name == "Object") {
+      let itemObj = parse_res.item;
+      parse_res.item = [];
+      parse_res.item.push(itemObj);
+    }
+    return parse_res;
   }
 }
