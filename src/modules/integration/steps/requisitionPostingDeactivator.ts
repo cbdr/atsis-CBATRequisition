@@ -21,7 +21,8 @@ export default class requisitionRequestProcessor {
     ) { }
     
     public async deactivateReqPosting(searchParams:any,api:any){
-        await api.deactivateReqPostingById(searchParams);
+        let deactivationStatus = await api.deactivateReqPostingById(searchParams);
+        return deactivationStatus;
     }
     
 }

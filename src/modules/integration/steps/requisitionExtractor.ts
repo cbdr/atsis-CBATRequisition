@@ -19,10 +19,10 @@ export default class requisitionExtractor {
                     ) {
   }
 
-  public async extract(config: any, cb: any): Promise<void> {
+  public async extract(searchParams: any, cb: any): Promise<void> {
     let success: number = 0;
     let error: number = 0;
-    await this.pageProcessor.extractEntities('deActivate', config, {}, async (reqPostingId: any,api:any): Promise<void> => {
+    await this.pageProcessor.extractEntities('deActivate', {}, searchParams, async (reqPostingId: any,api:any): Promise<void> => {
       const result: IExtractResult = await this.DeactivateRequisitionsPostings(reqPostingId,api);
       success += result.success;
       error += result.error;

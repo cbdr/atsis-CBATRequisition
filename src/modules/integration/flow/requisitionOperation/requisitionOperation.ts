@@ -16,7 +16,7 @@ export default class requisitionOperation {
     this.logger = this.logger.enterNewFile(__filename);
   }
 
-  public async process(configurationId: string): Promise<void> {
+  public async process(searchParams: string): Promise<void> {
     
    
     // write a code to parse string for getting parameters 
@@ -27,7 +27,7 @@ export default class requisitionOperation {
     //this.logger.trace(AtsSyncEvents.SYNC_SEARCH_FILTERS, {filters: extractConfiguration.filters});
     //this.logger.trace(AtsSyncEvents.SYNC_ATS_CONFIG, atsSyncConfig);
     const extractor = this.container.get<requisitionExtractor>(requisitionExtractor);
-    await extractor.extract("extractConfiguration", async (candidate: any): Promise<void> => {
+    await extractor.extract(searchParams, async (candidate: any): Promise<void> => {
       
      //this.logger.info(AtsSyncEvents.SYNC_CANDIDATE_SENT, { emailAddress: candidate.email });
     });

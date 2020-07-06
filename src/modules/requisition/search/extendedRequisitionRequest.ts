@@ -33,7 +33,8 @@ export default class extendedRequisitionRequest {
                     requisitionPool.startWorker({
                     fn: async (): Promise<any> => {
                       console.log('value of i is',++i)
-                      await cb(posting.id._text, api, retryLimit);
+                      let deactivationStatus = await cb(posting.id._text, api, retryLimit);
+                      posting.deactivationStatus = deactivationStatus;
                     }
                   });
                 }

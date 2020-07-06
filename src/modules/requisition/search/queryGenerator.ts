@@ -46,7 +46,7 @@ export default class queryGenerator {
       private async makeAPICall(description: string, uri: string): Promise<any> {
         try {
           console.log('token inside make api call is',this.token);
-         const apiToken: any = !isNullOrUndefined(this.token)? this.token :this.getToken('generate token','','','');
+         const apiToken: any = !isNullOrUndefined(this.token)? this.token :await this.getToken('generate token','','','');
           let auth= Buffer.from(`${this.process.getEnvVar('CBAT_AMAZON_USERNAME')}` + ':' + `${this.process.getEnvVar('CBAT_AMAZON_PASSWORD')}`, 'utf8').toString('base64')
           const options: any = {
             description,
@@ -72,12 +72,16 @@ export default class queryGenerator {
       private async makeAPICall1(description: string, uri: string): Promise<any> {
         try {
           console.log('token inside make api call is',this.token);
-         const apiToken: any = !isNullOrUndefined(this.token)? this.token :this.getToken('generate token','','','');
+         const apiToken: any = !isNullOrUndefined(this.token)? this.token :await this.getToken('generate token','','','');
+         console.log("api token is",apiToken)
           let auth= Buffer.from(`${this.process.getEnvVar('CBAT_AMAZON_USERNAME')}` + ':' + `${this.process.getEnvVar('CBAT_AMAZON_PASSWORD')}`, 'utf8').toString('base64')
           const options: any = {
             description,
-            method: 'GET',
+            method: 'PUT',
             uri,
+            body:JSON.stringify({
+              "status":"inactive"
+          }),
             headers: {
                 ["Ats-Auth-Token"]: apiToken.auth_code,
                 Authorization: 'Basic '+auth
@@ -86,9 +90,9 @@ export default class queryGenerator {
             timeout: 10000
           };
           console.log('options for makeApiCall for deactivation is',options)
-          //const response: any = await this.httpClient.call(options) as any;
+          const response: any = await this.httpClient.call(options) as any;
           
-          return ;
+          return response;
         } catch (error) {
             console.log(JSON.stringify(error));
             throw "error in getting search Query"
