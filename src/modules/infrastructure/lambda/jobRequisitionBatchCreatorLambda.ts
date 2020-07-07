@@ -23,11 +23,18 @@ export async function handler(event: any, context: any, callback: any): Promise<
   try {
     const snsClient = container.get<SNS>(SNS);
       const message: any = snsClient.getMessage(event);
-    const candidatePullScheduler: batchCreator = container.get<batchCreator>(batchCreator);
-    const batchName: string= '';
-    await candidatePullScheduler.executeJobDefinition(
+      let searchParams = ''
+      if(message.title){
+        searchParams =searchParams+`Prop38:${message.title};`;
+      }
+      if(message.startDate){
+        searchParams = searchParams+`Prop40.begin:${message.startDate}`
+      }
+    const batchCreatorFunc: batchCreator = container.get<batchCreator>(batchCreator);
+    const batchName: string= 'job-requisition-batch';
+    await batchCreatorFunc.executeJobDefinition(
       message,
-      event.batchName
+      batchName
       );
   } catch (error) {
     logger.error('A critical error occurred', { error });

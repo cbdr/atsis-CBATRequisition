@@ -27,8 +27,12 @@ export default class requisitionRequestProcessor {
     public async updateRequisitionJobs(){
         
     }
-    private async extractEntitiesWithFilter(entity: any,config: any,searchParameters: any,cb: any): Promise<void> {
+    private async extractEntitiesWithFilter(entity: any,config: any,searchParams: any,cb: any): Promise<void> {
         console.log('inside extract entities with filters');
+        let searchParameters = {
+          seachString:searchParams,
+          page:1
+        }
         searchParameters.page = 1;
         
         let result: any = await this.extractPage(entity,'abc',config,searchParameters,cb);

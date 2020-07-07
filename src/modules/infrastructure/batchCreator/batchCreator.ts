@@ -11,14 +11,13 @@ import { isNullOrUndefined } from 'util';
 dotEnv.config();
 
 @injectable()
-export default class Scheduler {
+export default class batchCreator {
   public constructor(private configLoader: ConfigurationLoader, private logger: Logger, private batchManager: requisitionBatchManager) { }
   
   public async executeJobDefinition(jobDefinition: string, batchName: string): Promise<void> {
       try {
         const configuration: IConfiguration = this.configLoader.getConfiguration();
-        jobDefinition = `${jobDefinition}-${configuration.stage}`;
-        const jobQueue: string = `atsis-update-queue-${configuration.stage}`;
+        const jobQueue: string = `atsis-job-requisition-queue-${configuration.stage}`;
         await this.batchManager.submitConfigurations({
           jobDefinition,
           jobQueue,

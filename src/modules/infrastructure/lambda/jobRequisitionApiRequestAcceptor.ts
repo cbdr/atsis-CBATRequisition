@@ -21,10 +21,13 @@ export async function handler(event: any, context: any, callback: any): Promise<
   const logger: Logger = container.get<Logger>(Logger);
   try {
       const snsClient = container.get<SNS>(SNS);
-      const message: any = snsClient.getMessage(event);
+      const message: any = JSON.parse(event.body);
     await snsClient.publishMessage(
-      message,
-      event.batchName
+      'us-east-1',
+      {Message:message,
+        TopicArn:'arn:aws:sns:us-east-1:160387761777:job-requisition-request-distribution-stage'
+      }
+      
       );
     const response: any = {
         statusCode: 200,

@@ -10,12 +10,13 @@ export default class buildQueryParams {
       ) {}
     public buildRequisitionQueryParameters(searchParams: any) {
         let pageNumber = searchParams.page;
+        let seachString = searchParams.searchString;
         let query = ''
         if (pageNumber==1){
-            query = `${this.process.getEnvVar('CBAT_AMAZON_REQ_SEARCH_API')}?params=Prop38:CH1;`;
+            query = `${this.process.getEnvVar('CBAT_AMAZON_REQ_SEARCH_API')}?params=${seachString}`;
         }
     else {
-        query = `${this.process.getEnvVar('CBAT_AMAZON_REQ_SEARCH_API')}?params=prop38:CH1;page:${pageNumber}`;
+        query = `${this.process.getEnvVar('CBAT_AMAZON_REQ_SEARCH_API')}?params=${seachString}page:${pageNumber}`;
     }
         
         return query;

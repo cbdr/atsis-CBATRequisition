@@ -25,9 +25,7 @@ async function  main(): Promise<void> {
   
     const log: Logger = container.get<Logger>(Logger);
     const process: Process = container.get<Process>(Process);
-    const searchParams: any = {
-        params:'prop38:test'
-    };
+    const searchParams: any = process.getArg(2);
     if (searchParams) {
       try {
         await requistion.process(searchParams);
