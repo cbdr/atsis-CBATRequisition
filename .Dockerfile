@@ -1,6 +1,6 @@
 FROM node:8.15
 
-ENV APP_HOME=/Users/vsingla/GitHub/jobRequisition1
+ENV APP_HOME=/Users/vsingla/GitHub/amazon-bulk-processing-stage
 
 COPY . $APP_HOME
 WORKDIR $APP_HOME

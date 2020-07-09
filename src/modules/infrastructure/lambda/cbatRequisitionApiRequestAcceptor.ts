@@ -3,7 +3,7 @@ import { Context, Callback } from 'aws-lambda';
 import * as _ from 'lodash';
 import SNS from '../../npm/SNS'
 import NpmModule from '../../npm/NpmModule';
-import CoreModule from '../../core/CoreModule';
+import CoreModule from '../../core/coreModule';
 
 
 import IntegrationModule from '../../integration/IntegrationModule';
@@ -25,7 +25,7 @@ export async function handler(event: any, context: any, callback: any): Promise<
     await snsClient.publishMessage(
       'us-east-1',
       {Message:message,
-        TopicArn:'arn:aws:sns:us-east-1:160387761777:job-requisition-request-distribution-stage'
+        TopicArn:`arn:aws:sns:us-east-1:160387761777:cbat-requisition-request-distribution-${process.env.Stage}`
       }
       
       );

@@ -20,7 +20,7 @@ export default class requisitionRequestProcessor {
         private xmlUtils: xmlUtils
     ) { }
     public async extractEntities(entity: any,config: any,searchParameters: any,cb: any): Promise<void> {
-        console.log('inside extract entities');
+        this.logger.info('inside extract entities',{})
         await this.extractEntitiesWithFilter(entity, config, searchParameters, cb);
     }
 
@@ -28,7 +28,7 @@ export default class requisitionRequestProcessor {
         
     }
     private async extractEntitiesWithFilter(entity: any,config: any,searchParams: any,cb: any): Promise<void> {
-        console.log('inside extract entities with filters');
+      this.logger.info('inside extract entities with filters',{})
         let searchParameters = {
           seachString:searchParams,
           page:1
@@ -37,8 +37,7 @@ export default class requisitionRequestProcessor {
         
         let result: any = await this.extractPage(entity,'abc',config,searchParameters,cb);
        
-        //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_INFO_RETRIEVED, { totalRegistersToProcess: results.searchResults.length, pageSize: searchParameters.limit });
-        console.log("after extracting one page", JSON.stringify(result));
+        this.logger.info('requisition result for page 1 is', {result} );
         //await cb(result);
         console.log('page number is ',parseInt(result.root.page._text), 'and total number page is ',parseInt(result.root.pageCount._text))
 
@@ -58,7 +57,7 @@ export default class requisitionRequestProcessor {
 
     private async extractPage(entity:any, pageUrl: string, config: any,searchParameters: any,cb:any, retryLimit?: number): Promise<any> {
         //this.logger.info(AtsSyncEvents.CANDIDATE_EXTRACTION_EXTRACTING_PAGE, { pageNumber: searchParameters.pageNumber });
-        console.log('inside extract page');
+        this.logger.info('inside extract page',{})
         const api: any = this.apiFactory.createFromAtsSyncExtract(config);
     
         try {
@@ -66,15 +65,13 @@ export default class requisitionRequestProcessor {
             let requistionsData: any = null;
             this.logger.info('getting requisitions in extract page',{});
             requistionsData = await api.getRequisitions(searchParameters) as any;
-            console.log('1');
             requistionsData = this.xmlUtils.customizedXmlFormat(requistionsData);
-            console.log('requistions data is',requistionsData);
-            console.log('requistion result is 123456',JSON.stringify(requistionsData));
+            this.logger.info('requistions data is',{requistionsData});
             
             if (parseInt(requistionsData.root.result.item.length)>0){
-                console.log('5');
+                this.logger.info('extracting posting details',{})
                 await this.extractPostingDetails(requistionsData,api,cb,5);
-                console.log('after getting posting details in extract page',JSON.stringify(requistionsData))
+                this.logger.info('after getting posting details in extract page',{requistionsData})
             }
             return requistionsData as any;
           
@@ -93,21 +90,17 @@ export default class requisitionRequestProcessor {
     
             const requisitionPool: AsyncPool = this.poolFactory.createPool(20);
             let i =0;
-            console.log('length of requisitions ids array is',requisitions.root.result.item.length);
+            this.logger.info('length of requisitions ids array is',requisitions.root.result.item.length);
             for (const requisition of requisitions.root.result.item) {
                 requisitionPool.startWorker({
                 fn: async (): Promise<any> => {
                   requisition.postings = [];
-                  console.log('value of i is',++i)
+                  this.logger.info('value of i is',{i:++i})
                   await this.postingDataHandler.extractRequistionPostingData(requisition as any, api,cb, retryLimit);
                 }
               });
             }
-            console.log("hiiii");
             await requisitionPool.waitForAll();
-
-            console.log('byee');
-            console.log("requistion data after all async is",JSON.stringify(requisitions))
             this.logger.info('all posting data along with requisition data',requisitions);
           }
         } catch (error) {

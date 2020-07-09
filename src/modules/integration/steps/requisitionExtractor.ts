@@ -34,9 +34,13 @@ export default class requisitionExtractor {
   private async DeactivateRequisitionsPostings(reqPostingId: any,api:any): Promise<any> {
     let success: number = 0;
     let error: number = 0;
-    console.log('inside decativateRequistionPostings')
+    this.logger.info('inside decativateRequistionPostings',{})
     await this.reqPostingDeactivator.deactivateReqPosting(reqPostingId,api);
     return { success, error };
+  }
+
+  private async ProcessForEmail(){
+    
   }
 
   private async processCandidate(apiCandidate: any, cb: any): Promise<boolean> {

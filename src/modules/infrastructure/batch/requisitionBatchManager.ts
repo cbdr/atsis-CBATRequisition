@@ -22,7 +22,7 @@ export default class ATSSyncBatchManager {
   public async submitConfigurations(batchConfigurations: any): Promise<void> {
 
         const jobInfo: ISubmitJobRequest = this.createJobInfo( batchConfigurations);
-        
+        this.logger.info('batch job info is ',{jobInfo})
         await this.batch.submitJob(batchConfigurations.region, jobInfo);
         
   }

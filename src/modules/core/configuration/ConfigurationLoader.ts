@@ -12,21 +12,15 @@ export default class ConfigurationLoader {
      return {
        region: this.process.getEnvVar('REGION'),
        logLevel: this.process.getEnvVar('LOG_LEVEL') || 'info',
-       cbRootApi: this.process.getEnvVar('CB_API_ROOT'),
-       cbRootApiReadOnly: this.process.getEnvVar('CB_API_ROOT_READONLY'),
        stage: this.process.getEnvVar('STAGE'),
        accountNumber: this.process.getEnvVar('ACCOUNT_NUMBER'),
        clientId: this.process.getEnvVar('CLIENT_ID'),
-       clientIdReadOnly: this.process.getEnvVar('CLIENT_ID_READONLY'),
        sharedSecret: this.process.getEnvVar('SHARED_SECRET'),
-       sharedSecretReadOnly: this.process.getEnvVar('SHARED_SECRET_READONLY'),
-       kenexaCertPwd: this.process.getEnvVar('CERT_PWD'),
        scalyrURL: this.process.getEnvVar('SCALYR_URL'),
        scalyrLog: this.process.getEnvVar('SCALYR_LOG'),
        scalyrToken: this.process.getEnvVar('SCALYR_TOKEN'),
        scalyrTimeout: this.process.getEnvVar('SCALYR_TIMEOUT') || '3000',
        loggerName: this.process.getEnvVar('LOGGER_NAME'),
-       cbApplyBaseUrl: this.process.getEnvVar('CB_APPLY_BASE_URL')
      };
   }
 

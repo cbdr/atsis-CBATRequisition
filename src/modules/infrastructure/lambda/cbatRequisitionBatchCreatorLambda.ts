@@ -3,7 +3,7 @@ import { Context, Callback } from 'aws-lambda';
 import * as _ from 'lodash';
 import batchCreator from '../batchCreator/batchCreator';
 import NpmModule from '../../npm/NpmModule';
-import CoreModule from '../../core/CoreModule';
+import CoreModule from '../../core/coreModule';
 import SNS from '../../npm/SNS'
 
 
@@ -26,9 +26,6 @@ export async function handler(event: any, context: any, callback: any): Promise<
       let searchParams = ''
       if(message.title){
         searchParams =searchParams+`Prop38:${message.title};`;
-      }
-      if(message.startDate){
-        searchParams = searchParams+`Prop40.begin:${message.startDate}`
       }
     const batchCreatorFunc: batchCreator = container.get<batchCreator>(batchCreator);
     const batchName: string= 'job-requisition-batch';

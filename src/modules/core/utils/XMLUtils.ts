@@ -56,7 +56,6 @@ export default class XMLUtils {
     if (_.get(result, 'root.result', false)) {
       result.root.result = this.parseResult(_.get(result, 'root.result', {}));
     }
-    console.log('inside customized Xml format',JSON.stringify(result));
     return result;
   }
 

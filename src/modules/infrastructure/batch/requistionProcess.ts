@@ -23,17 +23,18 @@ async function  main(): Promise<void> {
     // TODO this is very similar to candidate pull only
     const requistion: any = container.get<requisitionOperation>(requisitionOperation);
   
-    const log: Logger = container.get<Logger>(Logger);
+    const logger: Logger = container.get<Logger>(Logger);
     const process: Process = container.get<Process>(Process);
     const searchParams: any = process.getArg(2);
+    logger.info('search params are', {searchParams});
     if (searchParams) {
       try {
         await requistion.process(searchParams);
       } catch (err) {
-        log.error('An error ocurred!', err);
+        logger.error('An error ocurred!', err);
       }
     } else {
-       log.error('Configuration parameter is needed', {searchParams});
+       logger.error('Configuration parameter is needed', {searchParams});
        process.exit(-1);
     }
   
